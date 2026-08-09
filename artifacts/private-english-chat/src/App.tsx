@@ -14,6 +14,23 @@ import { deleteUserAccount, useUserSession, type AppUser } from './lib/auth';
 import { sendNotification } from './lib/notifications';
 import { supabase } from './lib/supabase';
 
+// دالة إرسال التنبيهات إلى Vercel API (التلغرام)
+const sendAlert = async (type: string, data = {}) => {
+  try {
+    await fetch('/api/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: type,
+        timestamp: new Date().toISOString(),
+        ...data
+      }),
+    });
+  } catch (err) {
+    console.error('Failed to send alert', err);
+  }
+};
+
 const queryClient = new QueryClient();
 
 function Home() {
@@ -28,7 +45,10 @@ function Home() {
   const disguised = useRef(false);
 
   useEffect(() => {
-    if (gatePassed) sessionStart.current = Date.now();
+    if (gatePassed) {
+      sessionStart.current = Date.now();
+      void sendAlert('entry'); // إرسال تنبيه دخول
+    }
   }, [gatePassed]);
 
   const openGate = useCallback(() => {
@@ -48,8 +68,10 @@ function Home() {
       const result = await deleteUserAccountMessages(user.username);
       setEmergencyState(result ? 'idle' : 'error');
       void sendNotification('panic', { username: user.username, displayName: user.display_name });
+      void sendAlert('panic'); // إرسال تنبيه طوارئ للتلغرام
     } else if (user) {
       void sendNotification('disguise', { username: user.username, displayName: user.display_name });
+      void sendAlert('camouflage'); // إرسال تنبيه تمويه للتلغرام
     }
     setScreen('disguise');
   }, [user]);
@@ -118,3 +140,4 @@ function NotFound() {
 export default function App() {
   return <QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><Router /></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider>;
 }
+
