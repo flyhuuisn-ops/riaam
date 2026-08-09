@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Private English Chat"
+description = "A private Arabic-language message space with Supabase-backed chat, secret-question access, activity notifications, and a safe English-learning disguise screen."
+version = "1.0.0"
+id = "artifacts/private-english-chat"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23097
+
+[services.development]
+run = "pnpm --filter @workspace/private-english-chat run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/private-english-chat", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/private-english-chat/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23097"
+BASE_PATH = "/"
