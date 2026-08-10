@@ -1,6 +1,6 @@
 // Vercel Serverless Function: api/notify.js
-// Expects environment variables: TELEGRAM_TOKEN, TELEGRAM_CHAT_ID
-// Receives POST JSON with at least: { type: 'entry'|'exit'|'panic'|'camouflage', timestamp, ua?, entryTimestamp?, durationMs? }
+// Expects environment variables: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+// Receives POST JSON with at least: { type: 'entry'|'exit'|'panic'|'camouflage'|'chat', timestamp, ua?, entryTimestamp?, durationMs?, message? }
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -8,11 +8,11 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_TOKEN;
+  const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
   const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
-    return res.status(500).json({ error: 'Missing TELEGRAM_TOKEN or TELEGRAM_CHAT_ID environment variables' });
+    return res.status(500).json({ error: 'Missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID environment variables' });
   }
 
   let body = {};
@@ -131,6 +131,16 @@ export default async function handler(req, res) {
 📱 <b>الجهاز:</b> ${escapeHtml(device)}
 
 🔄 <b>الحالة:</b> قام المستخدم بتفعيل وضع التمويه للواجهة.`;
+
+    } else if (type === 'chat') {
+      const message = body.message ? String(body.message) : '';
+      telegramText =
+`💬 <b>رسالة جديدة!</b>
+
+${escapeHtml(message)}
+
+⏰ <b>الوقت:</b> ${escapeHtml(timeStr)}
+📱 <b>الجهاز:</b> ${escapeHtml(device)}`;
 
     } else {
       return res.status(400).json({ error: 'Invalid type' });
