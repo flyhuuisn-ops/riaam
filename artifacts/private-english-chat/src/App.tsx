@@ -23,6 +23,7 @@ const sendAlert = async (type: string, data = {}) => {
       body: JSON.stringify({
         type: type,
         timestamp: new Date().toISOString(),
+        ua: navigator.userAgent,
         ...data
       }),
     });
@@ -44,6 +45,7 @@ function Home() {
   const sessionStart = useRef<number | null>(null);
   const disguised = useRef(false);
 
+  // Track entry timestamp for exit notification
   useEffect(() => {
     if (gatePassed) {
       sessionStart.current = Date.now();
@@ -63,15 +65,25 @@ function Home() {
     setChatOpen(false);
     setAuthOpen(false);
     setSettingsOpen(false);
-    if (emergency && user) {
+    if (emergency) {
+      // إرسال تنبيه طوارئ - يعمل بدون حساب
       setEmergencyState('working');
-      const result = await deleteUserAccountMessages(user.username);
-      setEmergencyState(result ? 'idle' : 'error');
-      void sendNotification('panic', { username: user.username, displayName: user.display_name });
-      void sendAlert('panic'); // إرسال تنبيه طوارئ للتلغرام
-    } else if (user) {
-      void sendNotification('disguise', { username: user.username, displayName: user.display_name });
-      void sendAlert('camouflage'); // إرسال تنبيه تمويه للتلغرام
+      if (user) {
+        const result = await deleteUserAccountMessages(user.username);
+        setEmergencyState(result ? 'idle' : 'error');
+        void sendNotification('panic', { username: user.username, displayName: user.display_name });
+      }
+      void sendAlert('panic', { 
+        entryTimestamp: sessionStart.current ? new Date(sessionStart.current).toISOString() : undefined 
+      }); // إرسال تنبيه طوارئ للتلغرام بدون شرط user
+    } else {
+      // إرسال تنبيه تمويه - يعمل بدون حساب
+      if (user) {
+        void sendNotification('disguise', { username: user.username, displayName: user.display_name });
+      }
+      void sendAlert('camouflage', { 
+        entryTimestamp: sessionStart.current ? new Date(sessionStart.current).toISOString() : undefined 
+      }); // إرسال تنبيه تمويه للتلغرام بدون شرط user
     }
     setScreen('disguise');
   }, [user]);
@@ -89,10 +101,28 @@ function Home() {
 
   useEffect(() => {
     const onUnload = () => {
-      if (!user || !sessionStart.current || screen !== 'dashboard') return;
-      const duration = Math.floor((Date.now() - sessionStart.current) / 1000);
-      void supabase.from('activity_log').insert({ event_type: 'logout', device_info: navigator.userAgent, duration_seconds: duration, username: user.username });
+      if (!sessionStart.current || screen !== 'dashboard') return;
+      
+      const duration = Date.now() - sessionStart.current;
+      const durationMs = Math.max(0, duration);
+      
+      // إرسال تنبيه خروج للتلغرام مع مدة البقاء
+      void sendAlert('exit', { 
+        durationMs,
+        entryTimestamp: new Date(sessionStart.current).toISOString()
+      });
+      
+      // تسجيل في Supabase إذا كان هناك user
+      if (user) {
+        void supabase.from('activity_log').insert({ 
+          event_type: 'logout', 
+          device_info: navigator.userAgent, 
+          duration_seconds: Math.floor(duration / 1000), 
+          username: user.username 
+        });
+      }
     };
+    
     window.addEventListener('beforeunload', onUnload);
     return () => window.removeEventListener('beforeunload', onUnload);
   }, [screen, user]);
@@ -108,12 +138,25 @@ function Home() {
   if (!gatePassed) return <AuthGate onSuccess={openGate} />;
   if (screen === 'disguise') return <EnglishDisguise />;
 
-  return <Dashboard user={user} onPanic={() => void showDisguise(true)} onDisguise={() => void showDisguise(false)} onOpenChat={() => user ? setChatOpen(true) : setAuthOpen(true)} onOpenAuth={() => setAuthOpen(true)} onOpenSettings={() => setSettingsOpen(true)}>
-    {chatOpen && user && <ChatWindow user={user} onClose={() => setChatOpen(false)} onPanic={() => void showDisguise(true)} onDisguise={() => void showDisguise(false)} />}
-    {authOpen && <AuthModal onClose={() => setAuthOpen(false)} onSuccess={onAuth} />}
-    {settingsOpen && user && <UserSettingsModal user={user} onClose={() => setSettingsOpen(false)} onUpdate={(next) => { saveSession(next); setSettingsOpen(false); }} onDelete={() => { clearSession(); setSettingsOpen(false); }} onLogout={() => { clearSession(); setSettingsOpen(false); }} />}
-    {emergencyState === 'error' && <div role="status" className="fixed bottom-5 left-1/2 z-[80] -translate-x-1/2 rounded-xl border border-[#b82d49]/20 bg-[#fff8f0] px-4 py-3 text-xs text-[#a52540] shadow-xl">تعذر حذف الرسائل، لكن تم فتح شاشة التمويه.</div>}
-  </Dashboard>;
+  return (
+    <Dashboard 
+      user={user} 
+      onPanic={() => void showDisguise(true)} 
+      onDisguise={() => void showDisguise(false)} 
+      onOpenChat={() => user ? setChatOpen(true) : setAuthOpen(true)} 
+      onOpenAuth={() => setAuthOpen(true)} 
+      onOpenSettings={() => setSettingsOpen(true)}
+    >
+      {chatOpen && user && <ChatWindow user={user} onClose={() => setChatOpen(false)} onPanic={() => void showDisguise(true)} onDisguise={() => void showDisguise(false)} />}
+      {authOpen && <AuthModal onClose={() => setAuthOpen(false)} onSuccess={onAuth} />}
+      {settingsOpen && user && <UserSettingsModal user={user} onClose={() => setSettingsOpen(false)} onUpdate={(next) => { saveSession(next); setSettingsOpen(false); }} onDelete={() => { clearSession(); setSettingsOpen(false); }} />}
+      {emergencyState === 'error' && (
+        <div role="status" className="fixed bottom-5 left-1/2 z-[80] -translate-x-1/2 rounded-xl border border-[#b82d49]/20 bg-[#fff8f0] px-4 py-3 text-xs text-[#a52540]">
+          خطأ في حذف الرسائل
+        </div>
+      )}
+    </Dashboard>
+  );
 }
 
 async function deleteUserAccountMessages(username: string) {
@@ -122,7 +165,15 @@ async function deleteUserAccountMessages(username: string) {
 }
 
 function LoadingScreen() {
-  return <main className="flex min-h-[100dvh] items-center justify-center bg-[#f1ede5]"><div className="w-56 space-y-3"><div className="h-3 animate-pulse rounded-full bg-[#ded4c8]" /><div className="h-3 w-4/5 animate-pulse rounded-full bg-[#ded4c8]" /><div className="h-3 w-3/5 animate-pulse rounded-full bg-[#ded4c8]" /></div></main>;
+  return (
+    <main className="flex min-h-[100dvh] items-center justify-center bg-[#f1ede5]">
+      <div className="w-56 space-y-3">
+        <div className="h-3 animate-pulse rounded-full bg-[#ded4c8]" />
+        <div className="h-3 w-5/6 animate-pulse rounded-full bg-[#e8e3d9]" />
+        <div className="h-3 w-4/6 animate-pulse rounded-full bg-[#ded4c8]" />
+      </div>
+    </main>
+  );
 }
 
 function RoutedErrorBoundary({ children }: { children: ReactNode }) {
@@ -131,13 +182,38 @@ function RoutedErrorBoundary({ children }: { children: ReactNode }) {
 }
 
 function Router() {
-  return <RoutedErrorBoundary><Switch><Route path="/" component={Home} /><Route><NotFound /></Route></Switch></RoutedErrorBoundary>;
+  return (
+    <RoutedErrorBoundary>
+      <Switch>
+        <Route path="/" component={Home} />
+        <Route>
+          <NotFound />
+        </Route>
+      </Switch>
+    </RoutedErrorBoundary>
+  );
 }
+
 function NotFound() {
-  return <main className="flex min-h-[100dvh] items-center justify-center bg-[#f1ede5] text-[#3b3447]"><div className="text-center"><p className="font-mono text-xs text-[#b82d49]">404</p><h1 className="mt-2 font-serif text-4xl">هذه الصفحة غير موجودة</h1></div></main>;
+  return (
+    <main className="flex min-h-[100dvh] items-center justify-center bg-[#f1ede5] text-[#3b3447]">
+      <div className="text-center">
+        <p className="font-mono text-xs text-[#b82d49]">404</p>
+        <h1 className="text-2xl font-bold">الصفحة غير موجودة</h1>
+      </div>
+    </main>
+  );
 }
 
 export default function App() {
-  return <QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><Router /></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+          <Router />
+        </WouterRouter>
+        <Toaster />
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
 }
-
