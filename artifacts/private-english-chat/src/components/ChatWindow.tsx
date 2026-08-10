@@ -12,7 +12,6 @@ export interface Message {
   username: string; 
   sender_handle?: string; 
   sender_display_name?: string; 
-  is_mine?: boolean; 
 }
 
 interface ChatWindowProps { 
@@ -29,44 +28,57 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
   const [loading, setLoading] = useState(true); 
   const [error, setError] = useState(''); 
   const [sending, setSending] = useState(false); 
-  const endRef = useRef<HTMLDivElement>(null); 
-  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { 
     let active = true; 
 
-    const fetchMessages = async () => { 
+    // 1. جلب الرسائل مرة واحدة فقط عند فتح الشاشة
+    const loadInitialMessages = async () => { 
       setLoading(true); 
-      // جلب جميع رسائل المجموعة بدون تصفية
       const { data, error: fetchError } = await supabase
         .from('messages')
         .select('*')
         .order('created_at', { ascending: true }); 
 
       if (!active) return; 
-      if (fetchError) setError('تعذر تحميل المحادثة. تحققي من الاتصال ثم حاولي مجدداً.'); 
-      else setMessages((data || []) as Message[]); 
+
+      if (fetchError) {
+        setError('تعذر تحميل المحادثة. تحققي من الاتصال.');
+      } else {
+        setMessages((data || []) as Message[]); 
+      }
       setLoading(false); 
     }; 
 
-    fetchMessages(); 
-    const poll = window.setInterval(fetchMessages, 4000); 
+    loadInitialMessages(); 
 
-    // الاستماع المباشر لجميع الإضافات في المجموعة
-    channelRef.current = supabase
-      .channel('group-chat-room')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => { 
-        void fetchMessages(); 
-      })
+    // 2. الاستماع اللحظي الدقيق (إضافة الرسالة الجديدة فقط بدون إعادة تحميل الصفحة)
+    const channel = supabase
+      .channel('realtime-chat-stream')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages' },
+        (payload) => {
+          const newMessage = payload.new as Message;
+          setMessages((prevMessages) => {
+            // منع تكرار إضافة الرسالة إذا كانت موجودة مسبقاً
+            if (prevMessages.some((msg) => msg.id === newMessage.id)) {
+              return prevMessages;
+            }
+            return [...prevMessages, newMessage];
+          });
+        }
+      )
       .subscribe(); 
 
     return () => { 
       active = false; 
-      window.clearInterval(poll); 
-      if (channelRef.current) supabase.removeChannel(channelRef.current); 
+      supabase.removeChannel(channel); 
     }; 
   }, []);
 
+  // التمرير التلقائي لأسفل الشاشة بمرونة عند وصول رسالة جديدة
   useEffect(() => { 
     endRef.current?.scrollIntoView({ behavior: 'smooth' }); 
   }, [messages]);
@@ -74,18 +86,21 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
   const send = async () => { 
     const content = input.trim(); 
     if (!content || sending) return; 
+
     setInput(''); 
     setSending(true); 
 
+    const newMsgObj = { 
+      content, 
+      sender: user.username, 
+      username: user.username, 
+      sender_handle: user.username, 
+      sender_display_name: user.display_name || user.username
+    };
+
     const { data, error: sendError } = await supabase
       .from('messages')
-      .insert({ 
-        content, 
-        sender: user.username, 
-        username: user.username, 
-        sender_handle: user.username, 
-        sender_display_name: user.display_name || user.username
-      })
+      .insert(newMsgObj)
       .select()
       .single(); 
 
@@ -94,23 +109,23 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
     if (sendError) { 
       setInput(content); 
       setError('لم تُرسل الرسالة. حاولي مرة أخرى.'); 
-    } else { 
-      setMessages((current) => current.some((item) => item.id === data.id) ? current : [...current, data as Message]); 
+    } else if (data) { 
+      setMessages((prev) => (prev.some((m) => m.id === data.id) ? prev : [...prev, data as Message])); 
       sendNotification('message', { username: user.username, messagePreview: content }); 
     } 
   };
 
   return (
-    <div className="fixed inset-0 z-40 bg-[#3b3447]/45 backdrop-blur-sm" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <div className="fixed inset-0 z-40 bg-[#3b3447]/45 backdrop-blur-sm" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <section className={`fixed z-50 flex flex-col overflow-hidden border border-[#d8cfc2] bg-[#faf7f1] shadow-[0_30px_100px_rgba(59,52,71,.25)] ${full ? 'inset-0' : 'bottom-0 left-0 right-0 h-[min(720px,92dvh)] rounded-t-[1.8rem] sm:bottom-6 sm:left-1/2 sm:right-auto sm:top-1/2 sm:h-[680px] sm:w-[480px] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-[1.8rem]'}`} dir="rtl">
         <header className="flex items-center justify-between border-b border-[#e5dcd0] bg-[#f4eee5] px-5 py-4">
           <div>
-            <p className="mb-1 font-mono text-[9px] uppercase tracking-[.18em] text-[#b82d49]">Group Thread</p>
-            <h2 className="flex items-center gap-2 font-semibold text-[#3b3447]"><MessageCircle size={17} className="text-[#b82d49]" /> المحادثة الجماعية</h2>
+            <p className="mb-1 font-mono text-[9px] uppercase tracking-[.18em] text-[#b82d49]">Live Chat</p>
+            <h2 className="flex items-center gap-2 font-semibold text-[#3b3447]"><MessageCircle size={17} className="text-[#b82d49]" /> المحادثة</h2>
           </div>
           <div className="flex items-center gap-1">
-            <button aria-label="تمويه داخلي" title="تمويه F3" onClick={onDisguise} className="grid h-9 w-9 place-items-center rounded-lg text-[#56727a] hover:bg-[#e5e7df]"><BookOpen size={17} /></button>
-            <button aria-label="طوارئ وحذف الرسائل" title="طوارئ Escape" onClick={onPanic} className="grid h-9 w-9 place-items-center rounded-lg text-[#a06a30] hover:bg-[#f8ead7]"><ShieldAlert size={17} /></button>
+            <button aria-label="تمويه" title="تمويه F3" onClick={onDisguise} className="grid h-9 w-9 place-items-center rounded-lg text-[#56727a] hover:bg-[#e5e7df]"><BookOpen size={17} /></button>
+            <button aria-label="طوارئ" title="طوارئ Escape" onClick={onPanic} className="grid h-9 w-9 place-items-center rounded-lg text-[#a06a30] hover:bg-[#f8ead7]"><ShieldAlert size={17} /></button>
             <button aria-label={full ? 'تصغير' : 'ملء الشاشة'} onClick={() => setFull(!full)} className="hidden h-9 w-9 place-items-center rounded-lg text-[#8e8178] hover:bg-[#e9e2d8] sm:grid">{full ? <Minimize2 size={16} /> : <Maximize2 size={16} strokeWidth={2} />}</button>
             <button aria-label="إغلاق" onClick={onClose} className="grid h-9 w-9 place-items-center rounded-lg text-[#8e8178] hover:bg-[#e9e2d8]"><X size={17} /></button>
           </div>
@@ -121,7 +136,6 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
             <div className="space-y-4">
               <div className="h-16 w-3/4 animate-pulse rounded-2xl bg-[#eee7dc]" />
               <div className="mr-auto h-20 w-2/3 animate-pulse rounded-2xl bg-[#eee7dc]" />
-              <div className="h-12 w-1/2 animate-pulse rounded-2xl bg-[#eee7dc]" />
             </div>
           ) : error && messages.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-center">
@@ -132,8 +146,7 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
           ) : messages.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-center">
               <div className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-[#b82d49]/10 text-[#b82d49]"><MessageCircle size={24} /></div>
-              <p className="font-semibold text-[#514752]">المجموعة تنتظر أول كلمة</p>
-              <p className="mt-2 text-xs text-[#a09288]">اكتبوا رسالة ليراها الجميع.</p>
+              <p className="font-semibold text-[#514752]">لا توجد رسائل حالياً</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -162,25 +175,19 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
           )}
         </div>
 
-        {error && messages.length > 0 && (
-          <div className="flex items-center gap-2 border-t border-[#e4dace] px-5 py-2 text-[11px] text-[#a52540]">
-            <AlertCircle size={13} />{error}
-          </div>
-        )}
-
         <footer className="border-t border-[#e5dcd0] bg-[#f4eee5] p-4">
           <div className="flex items-end gap-2">
             <textarea 
               aria-label="نص الرسالة" 
               value={input} 
-              onChange={(event) => setInput(event.target.value)} 
-              onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); send(); } }} 
+              onChange={(e) => setInput(e.target.value)} 
+              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} 
               rows={1} 
-              placeholder="اكتب رسالتك للمجموعة..." 
+              placeholder="اكتب رسالتك..." 
               className="max-h-28 min-h-11 flex-1 resize-none rounded-xl border border-[#d7cec0] bg-[#fffdf9] px-4 py-3 text-sm text-[#3b3447] outline-none focus:border-[#b82d49]" 
             />
             <button 
-              aria-label="إرسال الرسالة" 
+              aria-label="إرسال" 
               disabled={!input.trim() || sending} 
               onClick={send} 
               className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#b82d49] text-[#fffaf2] transition hover:bg-[#a92440] disabled:opacity-40"
@@ -188,9 +195,9 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
               {sending ? <LoaderCircle size={17} className="animate-spin" /> : <Send size={17} />}
             </button>
           </div>
-          <p className="mt-2 text-center font-mono text-[9px] text-[#a09288]">Enter للإرسال · Shift + Enter لسطر جديد</p>
         </footer>
       </section>
     </div>
   );
 }
+
