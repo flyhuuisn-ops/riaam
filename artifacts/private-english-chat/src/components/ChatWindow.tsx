@@ -33,7 +33,6 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
   useEffect(() => { 
     let active = true; 
 
-    // جلب جميع رسائل المجموعة مرة واحدة فقط عند الفتح لضمان عدم الاهتزاز
     const loadGroupMessages = async () => { 
       setLoading(true); 
       const { data, error: fetchError } = await supabase
@@ -53,7 +52,6 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
 
     loadGroupMessages(); 
 
-    // الاستماع اللحظي لإضافة أي رسالة جديدة بداخل المجموعة فوراً
     const channel = supabase
       .channel('group-chat-stream')
       .on(
@@ -156,11 +154,12 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
                 return (
                   <div key={message.id} className={`flex ${mine ? 'justify-start' : 'justify-end'}`}>
                     <div className={`max-w-[84%] rounded-2xl px-4 py-3 text-sm leading-7 ${mine ? 'rounded-br-md bg-[#b82d49]/10 text-[#514752]' : 'rounded-bl-md bg-[#3b3447] text-[#f9f3e8]'}`}>
-                      {!mine && (
-                        <p className="mb-1 text-[11px] font-semibold text-[#dcb386]">
-                          {displayName}
-                        </p>
-                      )}
+                      
+                      {/* التعديل هنا: إظهار الاسم لجميع الرسائل مع تلوين ذكي */}
+                      <p className={`mb-1 text-[11px] font-semibold ${mine ? 'text-[#b82d49]' : 'text-[#dcb386]'}`}>
+                        {displayName}
+                      </p>
+                      
                       <p className="whitespace-pre-wrap break-words">{message.content}</p>
                       <time dir="ltr" className={`mt-1 block text-left font-mono text-[9px] ${mine ? 'text-[#a09288]' : 'text-[#c6baca]'}`}>
                         {new Date(message.created_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}
