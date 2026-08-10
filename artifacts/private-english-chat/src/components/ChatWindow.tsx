@@ -33,8 +33,8 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
   useEffect(() => { 
     let active = true; 
 
-    // 1. جلب الرسائل مرة واحدة فقط عند فتح الشاشة
-    const loadInitialMessages = async () => { 
+    // جلب جميع رسائل المجموعة مرة واحدة فقط عند الفتح لضمان عدم الاهتزاز
+    const loadGroupMessages = async () => { 
       setLoading(true); 
       const { data, error: fetchError } = await supabase
         .from('messages')
@@ -44,25 +44,24 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
       if (!active) return; 
 
       if (fetchError) {
-        setError('تعذر تحميل المحادثة. تحققي من الاتصال.');
+        setError('تعذر تحميل محادثة المجموعة. تحققي من الاتصال.');
       } else {
         setMessages((data || []) as Message[]); 
       }
       setLoading(false); 
     }; 
 
-    loadInitialMessages(); 
+    loadGroupMessages(); 
 
-    // 2. الاستماع اللحظي الدقيق (إضافة الرسالة الجديدة فقط بدون إعادة تحميل الصفحة)
+    // الاستماع اللحظي لإضافة أي رسالة جديدة بداخل المجموعة فوراً
     const channel = supabase
-      .channel('realtime-chat-stream')
+      .channel('group-chat-stream')
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages' },
         (payload) => {
           const newMessage = payload.new as Message;
           setMessages((prevMessages) => {
-            // منع تكرار إضافة الرسالة إذا كانت موجودة مسبقاً
             if (prevMessages.some((msg) => msg.id === newMessage.id)) {
               return prevMessages;
             }
@@ -78,7 +77,6 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
     }; 
   }, []);
 
-  // التمرير التلقائي لأسفل الشاشة بمرونة عند وصول رسالة جديدة
   useEffect(() => { 
     endRef.current?.scrollIntoView({ behavior: 'smooth' }); 
   }, [messages]);
@@ -120,8 +118,8 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
       <section className={`fixed z-50 flex flex-col overflow-hidden border border-[#d8cfc2] bg-[#faf7f1] shadow-[0_30px_100px_rgba(59,52,71,.25)] ${full ? 'inset-0' : 'bottom-0 left-0 right-0 h-[min(720px,92dvh)] rounded-t-[1.8rem] sm:bottom-6 sm:left-1/2 sm:right-auto sm:top-1/2 sm:h-[680px] sm:w-[480px] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-[1.8rem]'}`} dir="rtl">
         <header className="flex items-center justify-between border-b border-[#e5dcd0] bg-[#f4eee5] px-5 py-4">
           <div>
-            <p className="mb-1 font-mono text-[9px] uppercase tracking-[.18em] text-[#b82d49]">Live Chat</p>
-            <h2 className="flex items-center gap-2 font-semibold text-[#3b3447]"><MessageCircle size={17} className="text-[#b82d49]" /> المحادثة</h2>
+            <p className="mb-1 font-mono text-[9px] uppercase tracking-[.18em] text-[#b82d49]">Group Thread</p>
+            <h2 className="flex items-center gap-2 font-semibold text-[#3b3447]"><MessageCircle size={17} className="text-[#b82d49]" /> المحادثة الجماعية</h2>
           </div>
           <div className="flex items-center gap-1">
             <button aria-label="تمويه" title="تمويه F3" onClick={onDisguise} className="grid h-9 w-9 place-items-center rounded-lg text-[#56727a] hover:bg-[#e5e7df]"><BookOpen size={17} /></button>
@@ -146,7 +144,8 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
           ) : messages.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-center">
               <div className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-[#b82d49]/10 text-[#b82d49]"><MessageCircle size={24} /></div>
-              <p className="font-semibold text-[#514752]">لا توجد رسائل حالياً</p>
+              <p className="font-semibold text-[#514752]">المجموعة تنتظر أول كلمة</p>
+              <p className="mt-2 text-xs text-[#a09288]">اكتبوا رسالة ليراها الجميع.</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -183,7 +182,7 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
               onChange={(e) => setInput(e.target.value)} 
               onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} 
               rows={1} 
-              placeholder="اكتب رسالتك..." 
+              placeholder="اكتب رسالتك للمجموعة..." 
               className="max-h-28 min-h-11 flex-1 resize-none rounded-xl border border-[#d7cec0] bg-[#fffdf9] px-4 py-3 text-sm text-[#3b3447] outline-none focus:border-[#b82d49]" 
             />
             <button 
@@ -200,4 +199,3 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
     </div>
   );
 }
-
