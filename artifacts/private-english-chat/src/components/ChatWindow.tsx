@@ -37,7 +37,10 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
   const [error, setError] = useState(''); 
   const [sending, setSending] = useState(false); 
   const [isAiMode, setIsAiMode] = useState(false);
+  
   const endRef = useRef<HTMLDivElement>(null);
+  // مرجع للثبات على نفس القناة المتصلة
+  const channelRef = useRef<any>(null);
 
   useEffect(() => { 
     let active = true; 
@@ -61,12 +64,14 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
 
     loadMessages(); 
 
-    // الاستماع اللحظي عبر Broadcast و Postgres معاً لضمان السرعة
+    // إنشاء القناة وحفظها في المرجع للاستخدام عند الإرسال
     const channel = supabase.channel('live-chat-room', {
       config: { broadcast: { self: false } }
     });
 
-    // 1. استقبال الرسائل المباشرة السريعة (Broadcast)
+    channelRef.current = channel;
+
+    // 1. استقبال البث المباشر السريع من المستخدمين الآخرين
     channel.on('broadcast', { event: 'new-message' }, ({ payload }) => {
       setMessages((prev) => {
         if (prev.some((msg) => msg.id === payload.id)) return prev;
@@ -74,7 +79,7 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
       });
     });
 
-    // 2. كاحتياط، الاستماع لقاعدة البيانات
+    // 2. استقبال تحديثات قاعدة البيانات (Postgres CDC)
     channel.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
       const newMessage = payload.new as Message;
       setMessages((prev) => {
@@ -88,6 +93,7 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
     return () => { 
       active = false; 
       supabase.removeChannel(channel); 
+      channelRef.current = null;
     }; 
   }, []);
 
@@ -127,15 +133,17 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
       setInput(content); 
       setError('لم تُرسل الرسالة. حاولي مرة أخرى.'); 
     } else if (data) { 
-      // تحديث الواجهة فوراً للمرسل
+      // إضافتها فوراً لدى المرسل
       setMessages((prev) => (prev.some((m) => m.id === data.id) ? prev : [...prev, data as Message]));
       
-      // إرسال الإشارة المباشرة للطرف الآخر
-      supabase.channel('live-chat-room').send({
-        type: 'broadcast',
-        event: 'new-message',
-        payload: data,
-      });
+      // إرسال البث عبر القناة النشطة والمربوطة
+      if (channelRef.current) {
+        channelRef.current.send({
+          type: 'broadcast',
+          event: 'new-message',
+          payload: data,
+        });
+      }
 
       sendNotification('message', { username: user.username, messagePreview: content }); 
     } 
@@ -210,3 +218,4 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
     </section>
   );
 }
+
