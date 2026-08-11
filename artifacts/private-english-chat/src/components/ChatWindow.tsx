@@ -14,16 +14,16 @@ export interface Message {
   sender_display_name?: string; 
 }
 
-// قائمة الرسائل التمويهية الجاهزة (أسئلة وأجوبة إنجليزية)
+// قائمة الرسائل التمويهية الجاهزة باللغة العربية بالكامل
 const FAKE_AI_MESSAGES: Message[] = [
-  { id: 'f1', content: 'Hello! I am Reem AI, your learning assistant. How can I help you with English today?', sender: 'ai', username: 'reem_ai', created_at: new Date().toISOString(), sender_display_name: 'Reem AI' },
-  { id: 'f2', content: 'What are the synonyms for the word beautiful?', sender: 'user', username: 'user', created_at: new Date().toISOString(), sender_display_name: 'أنت' },
-  { id: 'f3', content: 'Synonyms for beautiful include: Gorgeous, Stunning, Lovely, Attractive, and Elegant.', sender: 'ai', username: 'reem_ai', created_at: new Date().toISOString(), sender_display_name: 'Reem AI' },
-  { id: 'f4', content: 'Thank you, and what is the opposite of ancient?', sender: 'user', username: 'user', created_at: new Date().toISOString(), sender_display_name: 'أنت' },
-  { id: 'f5', content: 'The opposite of ancient is Modern or Contemporary.', sender: 'ai', username: 'reem_ai', created_at: new Date().toISOString(), sender_display_name: 'Reem AI' },
-  { id: 'f6', content: 'How can I use the word "elaborate" in a sentence?', sender: 'user', username: 'user', created_at: new Date().toISOString(), sender_display_name: 'أنت' },
-  { id: 'f7', content: 'You can say: "Could you please elaborate on that point?" meaning to explain further.', sender: 'ai', username: 'reem_ai', created_at: new Date().toISOString(), sender_display_name: 'Reem AI' },
-  { id: 'f8', content: 'Excellent, thank you so much!', sender: 'user', username: 'user', created_at: new Date().toISOString(), sender_display_name: 'أنت' },
+  { id: 'f1', content: 'أهلاً بك! أنا مساعدك الذكي Reem AI، كيف يمكنني مساعدتك اليوم؟', sender: 'ai', username: 'reem_ai', created_at: new Date().toISOString(), sender_display_name: 'Reem AI' },
+  { id: 'f2', content: 'ما هي مرادفات كلمة "جميل" في اللغة؟', sender: 'user', username: 'user', created_at: new Date().toISOString(), sender_display_name: 'أنت' },
+  { id: 'f3', content: 'مرادفات كلمة جميل تشمل: رائع، حسن، بهي، ووسيم.', sender: 'ai', username: 'reem_ai', created_at: new Date().toISOString(), sender_display_name: 'Reem AI' },
+  { id: 'f4', content: 'ممتاز، وما هو عكس كلمة "قريب"؟', sender: 'user', username: 'user', created_at: new Date().toISOString(), sender_display_name: 'أنت' },
+  { id: 'f5', content: 'عكس كلمة قريب هو بعيد.', sender: 'ai', username: 'reem_ai', created_at: new Date().toISOString(), sender_display_name: 'Reem AI' },
+  { id: 'f6', content: 'شكراً لك، هل يمكنك إعطائي مثالاً على جملة توضيحية؟', sender: 'user', username: 'user', created_at: new Date().toISOString(), sender_display_name: 'أنت' },
+  { id: 'f7', content: 'بالتأكيد، مثل قولنا: "العمل الناجح يبدأ بالتخطيط السليم والدقيق".', sender: 'ai', username: 'reem_ai', created_at: new Date().toISOString(), sender_display_name: 'Reem AI' },
+  { id: 'f8', content: 'شكراً جزيلاً لك!', sender: 'user', username: 'user', created_at: new Date().toISOString(), sender_display_name: 'أنت' },
 ];
 
 interface ChatWindowProps { 
@@ -245,7 +245,7 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
             onChange={(e) => setInput(e.target.value)} 
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} 
             rows={1} 
-            placeholder={isAiMode ? "Ask Reem AI..." : "اكتب رسالتك..."} 
+            placeholder={isAiMode ? "اسأل Reem AI..." : "اكتب رسالتك..."} 
             className="max-h-28 min-h-11 flex-1 resize-none rounded-xl border border-[#d7cec0] bg-[#fffdf9] px-4 py-3 text-sm text-[#3b3447] outline-none focus:border-[#b82d49]" 
           />
           <button 
@@ -261,3 +261,4 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
     </section>
   );
 }
+
