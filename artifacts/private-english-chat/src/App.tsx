@@ -150,7 +150,18 @@ function Home() {
     >
       {chatOpen && user && <ChatWindow user={user} onClose={() => setChatOpen(false)} onPanic={() => void showDisguise(true)} onDisguise={() => void showDisguise(false)} />}
       {authOpen && <AuthModal onClose={() => setAuthOpen(false)} onSuccess={onAuth} />}
-      {settingsOpen && user && <UserSettingsModal user={user} onClose={() => setSettingsOpen(false)} onUpdate={(next) => { saveSession(next); setSettingsOpen(false); }} onDelete={() => { clearSession(); setSettingsOpen(false); }} />}
+      {settingsOpen && user && (
+        <UserSettingsModal 
+          user={user} 
+          onClose={() => setSettingsOpen(false)} 
+          onLogout={() => {
+            clearSession();
+            setSettingsOpen(false);
+          }}
+          onUpdate={(next) => { saveSession(next); setSettingsOpen(false); }} 
+          onDelete={() => { clearSession(); setSettingsOpen(false); }} 
+        />
+      )}
       {emergencyState === 'error' && (
         <div role="status" className="fixed bottom-5 left-1/2 z-[80] -translate-x-1/2 rounded-xl border border-[#b82d49]/20 bg-[#fff8f0] px-4 py-3 text-xs text-[#a52540]">
           خطأ في حذف الرسائل
@@ -218,3 +229,4 @@ export default function App() {
     </QueryClientProvider>
   );
 }
+
