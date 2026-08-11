@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { AlertCircle, BookOpen, LoaderCircle, Maximize2, MessageCircle, Minimize2, Send, ShieldAlert, X } from 'lucide-react';
+import { AlertCircle, BookOpen, Bot, LoaderCircle, Maximize2, MessageCircle, Minimize2, Send, ShieldAlert, X } from 'lucide-react';
 import type { AppUser } from '../lib/auth';
 import { supabase } from '../lib/supabase';
 import { sendNotification } from '../lib/notifications';
@@ -13,6 +13,18 @@ export interface Message {
   sender_handle?: string; 
   sender_display_name?: string; 
 }
+
+// قائمة الرسائل التمويهية الجاهزة (أسئلة وأجوبة إنجليزية)
+const FAKE_AI_MESSAGES: Message[] = [
+  { id: 'f1', content: 'Hello! I am Reem AI, your learning assistant. How can I help you with English today?', sender: 'ai', username: 'reem_ai', created_at: new Date().toISOString(), sender_display_name: 'Reem AI' },
+  { id: 'f2', content: 'What are the synonyms for the word beautiful?', sender: 'user', username: 'user', created_at: new Date().toISOString(), sender_display_name: 'أنت' },
+  { id: 'f3', content: 'Synonyms for beautiful include: Gorgeous, Stunning, Lovely, Attractive, and Elegant.', sender: 'ai', username: 'reem_ai', created_at: new Date().toISOString(), sender_display_name: 'Reem AI' },
+  { id: 'f4', content: 'Thank you, and what is the opposite of ancient?', sender: 'user', username: 'user', created_at: new Date().toISOString(), sender_display_name: 'أنت' },
+  { id: 'f5', content: 'The opposite of ancient is Modern or Contemporary.', sender: 'ai', username: 'reem_ai', created_at: new Date().toISOString(), sender_display_name: 'Reem AI' },
+  { id: 'f6', content: 'How can I use the word "elaborate" in a sentence?', sender: 'user', username: 'user', created_at: new Date().toISOString(), sender_display_name: 'أنت' },
+  { id: 'f7', content: 'You can say: "Could you please elaborate on that point?" meaning to explain further.', sender: 'ai', username: 'reem_ai', created_at: new Date().toISOString(), sender_display_name: 'Reem AI' },
+  { id: 'f8', content: 'Excellent, thank you so much!', sender: 'user', username: 'user', created_at: new Date().toISOString(), sender_display_name: 'أنت' },
+];
 
 interface ChatWindowProps { 
   user: AppUser; 
@@ -28,6 +40,10 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
   const [loading, setLoading] = useState(true); 
   const [error, setError] = useState(''); 
   const [sending, setSending] = useState(false); 
+  
+  // 🤖 حالة التبديل لوضع الذكاء الاصطناعي الشكلي
+  const [isAiMode, setIsAiMode] = useState(false);
+
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { 
@@ -77,11 +93,17 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
 
   useEffect(() => { 
     endRef.current?.scrollIntoView({ behavior: 'smooth' }); 
-  }, [messages]);
+  }, [messages, isAiMode]);
 
   const send = async () => { 
     const content = input.trim(); 
     if (!content || sending) return; 
+
+    // إذا كنا في وضع الذكاء الاصطناعي، يتم تفريغ الحقل فقط وهمياً دون إرسال لقاعدة البيانات
+    if (isAiMode) {
+      setInput('');
+      return;
+    }
 
     setInput(''); 
     setSending(true); 
@@ -111,14 +133,32 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
     } 
   };
 
+  // اختيار الرسائل المعروضة بناءً على الوضع الحالي
+  const displayedMessages = isAiMode ? FAKE_AI_MESSAGES : messages;
+
   return (
     <section className={`fixed z-50 flex flex-col overflow-hidden border border-[#d8cfc2] bg-[#faf7f1] shadow-[0_30px_100px_rgba(59,52,71,.25)] ${full ? 'inset-0' : 'bottom-0 left-0 right-0 h-[min(720px,92dvh)] rounded-t-[1.8rem] sm:bottom-6 sm:left-1/2 sm:right-auto sm:top-1/2 sm:h-[680px] sm:w-[480px] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-[1.8rem]'}`} dir="rtl">
       <header className="flex items-center justify-between border-b border-[#e5dcd0] bg-[#f4eee5] px-5 py-4">
         <div>
-          <p className="mb-1 font-mono text-[9px] uppercase tracking-[.18em] text-[#b82d49]">Live Chat</p>
-          <h2 className="flex items-center gap-2 font-semibold text-[#3b3447]"><MessageCircle size={17} className="text-[#b82d49]" /> المحادثة</h2>
+          <p className="mb-1 font-mono text-[9px] uppercase tracking-[.18em] text-[#b82d49]">
+            {isAiMode ? "AI Mode" : "Live Chat"}
+          </p>
+          <h2 className="flex items-center gap-2 font-semibold text-[#3b3447]">
+            {isAiMode ? <Bot size={17} className="text-purple-600" /> : <MessageCircle size={17} className="text-[#b82d49]" />}
+            {isAiMode ? "محادثة مع Reem AI" : "المحادثة"}
+          </h2>
         </div>
         <div className="flex items-center gap-1">
+          {/* 🤖 زر التبديل لوضع الذكاء الاصطناعي الشكلي */}
+          <button 
+            aria-label="محادثة الذكاء الاصطناعي" 
+            title="تبديل إلى محادثة Reem AI" 
+            onClick={() => setIsAiMode((prev) => !prev)} 
+            className={`grid h-9 w-9 place-items-center rounded-lg transition-colors ${isAiMode ? 'bg-purple-200 text-purple-700' : 'text-purple-600 hover:bg-purple-50'}`}
+          >
+            <Bot size={18} />
+          </button>
+
           <button aria-label="تمويه" title="تمويه F3" onClick={onDisguise} className="grid h-9 w-9 place-items-center rounded-lg text-[#56727a] hover:bg-[#e5e7df]"><BookOpen size={17} /></button>
           <button aria-label="طوارئ" title="طوارئ Escape" onClick={onPanic} className="grid h-9 w-9 place-items-center rounded-lg text-[#a06a30] hover:bg-[#f8ead7]"><ShieldAlert size={17} /></button>
           <button aria-label={full ? 'تصغير' : 'ملء الشاشة'} onClick={() => setFull(!full)} className="hidden h-9 w-9 place-items-center rounded-lg text-[#8e8178] hover:bg-[#e9e2d8] sm:grid">{full ? <Minimize2 size={16} /> : <Maximize2 size={16} strokeWidth={2} />}</button>
@@ -139,18 +179,18 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
       </header>
 
       <div className="flex-1 overflow-y-auto px-4 py-5">
-        {loading ? (
+        {!isAiMode && loading ? (
           <div className="space-y-4">
             <div className="h-16 w-3/4 animate-pulse rounded-2xl bg-[#eee7dc]" />
             <div className="mr-auto h-20 w-2/3 animate-pulse rounded-2xl bg-[#eee7dc]" />
           </div>
-        ) : error && messages.length === 0 ? (
+        ) : !isAiMode && error && messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center text-center">
             <AlertCircle size={24} className="mb-3 text-[#b82d49]" />
             <p className="max-w-xs text-sm leading-6 text-[#6f625d]">{error}</p>
             <button onClick={() => window.location.reload()} className="mt-4 rounded-lg border border-[#d7cec0] px-3 py-2 text-xs font-semibold">إعادة المحاولة</button>
           </div>
-        ) : messages.length === 0 ? (
+        ) : !isAiMode && messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center text-center">
             <div className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-[#b82d49]/10 text-[#b82d49]"><MessageCircle size={24} /></div>
             <p className="font-semibold text-[#514752]">لا توجد رسائل حالياً</p>
@@ -158,16 +198,24 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
           </div>
         ) : (
           <div className="space-y-3">
-            {messages.map((message) => { 
-              const mine = message.sender_handle ? message.sender_handle === user.username : message.sender === user.username; 
-              const displayName = message.sender_display_name || message.sender_handle || message.sender || 'عضو';
+            {displayedMessages.map((message) => { 
+              const mine = isAiMode 
+                ? message.sender === 'user' 
+                : (message.sender_handle ? message.sender_handle === user.username : message.sender === user.username); 
+              
+              const displayName = isAiMode
+                ? (message.sender === 'user' ? 'أنت' : 'Reem AI')
+                : (message.sender_display_name || message.sender_handle || message.sender || 'عضو');
 
               return (
                 <div key={message.id} className={`flex w-full ${mine ? 'justify-start' : 'justify-end'}`}>
-                  {/* هنا تم التعديل الجذري لتصبح الفقاعة العصرية (واتساب/تليجرام) */}
-                  <div className={`relative w-fit max-w-[85%] rounded-2xl px-3 py-2 shadow-sm ${mine ? 'rounded-tr-sm bg-[#b82d49]/10 text-[#3b3447]' : 'rounded-tl-sm bg-[#3b3447] text-[#f9f3e8]'}`}>
+                  <div className={`relative w-fit max-w-[85%] rounded-2xl px-3 py-2 shadow-sm ${
+                    isAiMode 
+                      ? (mine ? 'rounded-tr-sm bg-purple-100 text-[#3b3447]' : 'rounded-tl-sm bg-[#3b3447] text-[#f9f3e8]')
+                      : (mine ? 'rounded-tr-sm bg-[#b82d49]/10 text-[#3b3447]' : 'rounded-tl-sm bg-[#3b3447] text-[#f9f3e8]')
+                  }`}>
                     
-                    <p className={`mb-0.5 text-[11px] font-bold ${mine ? 'text-[#b82d49]' : 'text-[#dcb386]'}`}>
+                    <p className={`mb-0.5 text-[11px] font-bold ${isAiMode ? (mine ? 'text-purple-700' : 'text-[#dcb386]') : (mine ? 'text-[#b82d49]' : 'text-[#dcb386]')}`}>
                       {displayName}
                     </p>
                     
@@ -175,9 +223,11 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
                       {message.content}
                     </p>
                     
-                    <time dir="ltr" className={`mt-1 block text-left font-mono text-[9px] ${mine ? 'text-[#a09288]' : 'text-[#a398a8]'}`}>
-                      {new Date(message.created_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}
-                    </time>
+                    {!isAiMode && (
+                      <time dir="ltr" className={`mt-1 block text-left font-mono text-[9px] ${mine ? 'text-[#a09288]' : 'text-[#a398a8]'}`}>
+                        {new Date(message.created_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}
+                      </time>
+                    )}
                   </div>
                 </div>
               ); 
@@ -195,7 +245,7 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
             onChange={(e) => setInput(e.target.value)} 
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} 
             rows={1} 
-            placeholder="اكتب رسالتك..." 
+            placeholder={isAiMode ? "Ask Reem AI..." : "اكتب رسالتك..."} 
             className="max-h-28 min-h-11 flex-1 resize-none rounded-xl border border-[#d7cec0] bg-[#fffdf9] px-4 py-3 text-sm text-[#3b3447] outline-none focus:border-[#b82d49]" 
           />
           <button 
@@ -211,4 +261,3 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
     </section>
   );
 }
-
