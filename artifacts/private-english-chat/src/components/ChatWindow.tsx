@@ -96,6 +96,7 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
   useEffect(() => { 
     let active = true; 
 
+    // 1. جلب الرسائل السابقة عند فتح النافذة
     const loadMessages = async () => { 
       setLoading(true); 
       const { data, error: fetchError } = await supabase
@@ -115,14 +116,20 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
 
     loadMessages(); 
 
+    // 2. تفعيل الاشتراك اللحظي الفوري لجدول الرسائل
     const channel = supabase
-      .channel('group-chat-stream')
+      .channel('messages-realtime-room')
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages' },
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'messages' 
+        },
         (payload) => {
           const newMessage = payload.new as Message;
           setMessages((prevMessages) => {
+            // منع تكرار الرسالة إذا كانت أُضيفت سبقاً محلياً
             if (prevMessages.some((msg) => msg.id === newMessage.id)) {
               return prevMessages;
             }
@@ -130,7 +137,11 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
           });
         }
       )
-      .subscribe(); 
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('تم الاتصال بالمحادثة اللحظية بنجاح');
+        }
+      }); 
 
     return () => { 
       active = false; 
@@ -174,6 +185,7 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
       setInput(content); 
       setError('لم تُرسل الرسالة. حاولي مرة أخرى.'); 
     } else if (data) { 
+      // تحديث الواجهة فوراً للمُرسِل
       setMessages((prev) => (prev.some((m) => m.id === data.id) ? prev : [...prev, data as Message])); 
       sendNotification('message', { username: user.username, messagePreview: content }); 
     } 
@@ -194,7 +206,6 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
           </h2>
         </div>
         <div className="flex items-center gap-1">
-          {/* زر تبديل وضع الذكاء الاصطناعي الشكلي */}
           <button 
             aria-label="محادثة الذكاء الاصطناعي" 
             title="تبديل إلى محادثة Reem AI" 
@@ -207,7 +218,6 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
           <button aria-label="تمويه" title="تمويه F3" onClick={onDisguise} className="grid h-9 w-9 place-items-center rounded-lg text-[#56727a] hover:bg-[#e5e7df]"><BookOpen size={17} /></button>
           <button aria-label="طوارئ" title="طوارئ Escape" onClick={onPanic} className="grid h-9 w-9 place-items-center rounded-lg text-[#a06a30] hover:bg-[#f8ead7]"><ShieldAlert size={17} /></button>
           
-          {/* زر ملء الشاشة وإرجاعها للحجم الطبيعي */}
           <button 
             aria-label={full ? 'تصغير' : 'ملء الشاشة'} 
             title={full ? 'تصغير النافذة' : 'ملء الشاشة'} 
@@ -315,4 +325,3 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
     </section>
   );
 }
-
