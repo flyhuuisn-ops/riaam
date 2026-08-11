@@ -146,6 +146,7 @@ function Home() {
       onOpenChat={() => user ? setChatOpen(true) : setAuthOpen(true)} 
       onOpenAuth={() => setAuthOpen(true)} 
       onOpenSettings={() => setSettingsOpen(true)}
+      onLogout={() => clearSession()} 
     >
       {chatOpen && user && <ChatWindow user={user} onClose={() => setChatOpen(false)} onPanic={() => void showDisguise(true)} onDisguise={() => void showDisguise(false)} />}
       {authOpen && <AuthModal onClose={() => setAuthOpen(false)} onSuccess={onAuth} />}
