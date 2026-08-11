@@ -43,9 +43,10 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
   useEffect(() => { 
     let active = true; 
 
-    // جلب الرسائل عند فتح النافذة
-    const loadMessages = async () => { 
-      setLoading(true); 
+    // الدالة المسؤولة عن جلب الرسائل من قاعدة البيانات
+    const fetchMessages = async (isFirstLoad: boolean) => { 
+      if (isFirstLoad) setLoading(true); 
+      
       const { data, error: fetchError } = await supabase
         .from('messages')
         .select('*')
@@ -54,35 +55,29 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
       if (!active) return; 
 
       if (fetchError) {
-        setError('تعذر تحميل المحادثة. تحققي من الاتصال.');
-      } else {
-        setMessages((data || []) as Message[]); 
+        if (isFirstLoad) setError('تعذر تحميل المحادثة. تحققي من الاتصال.');
+      } else if (data) {
+        setMessages(data as Message[]); 
       }
-      setLoading(false); 
+      
+      if (isFirstLoad) setLoading(false); 
     }; 
 
-    loadMessages(); 
+    // 1. جلب الرسائل فور فتح النافذة
+    fetchMessages(true); 
 
-    // الاستماع للبث الفوري الصادر من المُشغّل (Trigger)
-    const channel = supabase
-      .channel('chat-room')
-      .on('broadcast', { event: 'INSERT' }, (payload) => {
-        if (payload.payload && payload.payload.new) {
-          const newMessage = payload.payload.new as Message;
-          setMessages((prev) => {
-            // منع تكرار الرسالة إذا كانت موجودة مسبقاً
-            if (prev.some((m) => m.id === newMessage.id)) return prev;
-            return [...prev, newMessage];
-          });
-        }
-      })
-      .subscribe(); 
+    // 2. الحل الذهبي والمضمون: فحص صامت كل 2.5 ثانية لجلب أي رسالة جديدة فوراً
+    const intervalId = setInterval(() => {
+      if (!isAiMode) {
+        fetchMessages(false);
+      }
+    }, 2500);
 
     return () => { 
       active = false; 
-      supabase.removeChannel(channel); 
+      clearInterval(intervalId); // إيقاف الفحص عند إغلاق النافذة
     }; 
-  }, []);
+  }, [isAiMode]);
 
   useEffect(() => { 
     endRef.current?.scrollIntoView({ behavior: 'smooth' }); 
@@ -120,7 +115,7 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
       setInput(content); 
       setError('لم تُرسل الرسالة. حاولي مرة أخرى.'); 
     } else if (data) { 
-      // إضافة الرسالة محلياً فوراً للمرسل لتسريع الواجهة
+      // إضافة الرسالة في واجهة المُرسل فوراً لتسريع الاستجابة
       setMessages((prev) => (prev.some((m) => m.id === data.id) ? prev : [...prev, data as Message]));
       sendNotification('message', { username: user.username, messagePreview: content }); 
     } 
@@ -195,4 +190,3 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
     </section>
   );
 }
-
