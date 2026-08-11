@@ -39,12 +39,11 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
   const [isAiMode, setIsAiMode] = useState(false);
   
   const endRef = useRef<HTMLDivElement>(null);
-  // مرجع للثبات على نفس القناة المتصلة
-  const channelRef = useRef<any>(null);
 
   useEffect(() => { 
     let active = true; 
 
+    // جلب الرسائل عند فتح النافذة
     const loadMessages = async () => { 
       setLoading(true); 
       const { data, error: fetchError } = await supabase
@@ -64,36 +63,24 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
 
     loadMessages(); 
 
-    // إنشاء القناة وحفظها في المرجع للاستخدام عند الإرسال
-    const channel = supabase.channel('live-chat-room', {
-      config: { broadcast: { self: false } }
-    });
-
-    channelRef.current = channel;
-
-    // 1. استقبال البث المباشر السريع من المستخدمين الآخرين
-    channel.on('broadcast', { event: 'new-message' }, ({ payload }) => {
-      setMessages((prev) => {
-        if (prev.some((msg) => msg.id === payload.id)) return prev;
-        return [...prev, payload as Message];
-      });
-    });
-
-    // 2. استقبال تحديثات قاعدة البيانات (Postgres CDC)
-    channel.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
-      const newMessage = payload.new as Message;
-      setMessages((prev) => {
-        if (prev.some((msg) => msg.id === newMessage.id)) return prev;
-        return [...prev, newMessage];
-      });
-    });
-
-    channel.subscribe(); 
+    // الاستماع للبث الفوري الصادر من المُشغّل (Trigger)
+    const channel = supabase
+      .channel('chat-room')
+      .on('broadcast', { event: 'INSERT' }, (payload) => {
+        if (payload.payload && payload.payload.new) {
+          const newMessage = payload.payload.new as Message;
+          setMessages((prev) => {
+            // منع تكرار الرسالة إذا كانت موجودة مسبقاً
+            if (prev.some((m) => m.id === newMessage.id)) return prev;
+            return [...prev, newMessage];
+          });
+        }
+      })
+      .subscribe(); 
 
     return () => { 
       active = false; 
       supabase.removeChannel(channel); 
-      channelRef.current = null;
     }; 
   }, []);
 
@@ -133,18 +120,8 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
       setInput(content); 
       setError('لم تُرسل الرسالة. حاولي مرة أخرى.'); 
     } else if (data) { 
-      // إضافتها فوراً لدى المرسل
+      // إضافة الرسالة محلياً فوراً للمرسل لتسريع الواجهة
       setMessages((prev) => (prev.some((m) => m.id === data.id) ? prev : [...prev, data as Message]));
-      
-      // إرسال البث عبر القناة النشطة والمربوطة
-      if (channelRef.current) {
-        channelRef.current.send({
-          type: 'broadcast',
-          event: 'new-message',
-          payload: data,
-        });
-      }
-
       sendNotification('message', { username: user.username, messagePreview: content }); 
     } 
   };
