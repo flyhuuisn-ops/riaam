@@ -14,16 +14,64 @@ export interface Message {
   sender_display_name?: string; 
 }
 
-// قائمة الرسائل التمويهية الجاهزة باللغة العربية بالكامل
+// قائمة الرسائل التمويهية تماماً كما طلبْتَها بالعربي
 const FAKE_AI_MESSAGES: Message[] = [
-  { id: 'f1', content: 'أهلاً بك! أنا مساعدك الذكي Reem AI، كيف يمكنني مساعدتك اليوم؟', sender: 'ai', username: 'reem_ai', created_at: new Date().toISOString(), sender_display_name: 'Reem AI' },
-  { id: 'f2', content: 'ما هي مرادفات كلمة "جميل" في اللغة؟', sender: 'user', username: 'user', created_at: new Date().toISOString(), sender_display_name: 'أنت' },
-  { id: 'f3', content: 'مرادفات كلمة جميل تشمل: رائع، حسن، بهي، ووسيم.', sender: 'ai', username: 'reem_ai', created_at: new Date().toISOString(), sender_display_name: 'Reem AI' },
-  { id: 'f4', content: 'ممتاز، وما هو عكس كلمة "قريب"؟', sender: 'user', username: 'user', created_at: new Date().toISOString(), sender_display_name: 'أنت' },
-  { id: 'f5', content: 'عكس كلمة قريب هو بعيد.', sender: 'ai', username: 'reem_ai', created_at: new Date().toISOString(), sender_display_name: 'Reem AI' },
-  { id: 'f6', content: 'شكراً لك، هل يمكنك إعطائي مثالاً على جملة توضيحية؟', sender: 'user', username: 'user', created_at: new Date().toISOString(), sender_display_name: 'أنت' },
-  { id: 'f7', content: 'بالتأكيد، مثل قولنا: "العمل الناجح يبدأ بالتخطيط السليم والدقيق".', sender: 'ai', username: 'reem_ai', created_at: new Date().toISOString(), sender_display_name: 'Reem AI' },
-  { id: 'f8', content: 'شكراً جزيلاً لك!', sender: 'user', username: 'user', created_at: new Date().toISOString(), sender_display_name: 'أنت' },
+  { 
+    id: 'f1', 
+    content: 'أهلاً بك! أنا مساعدك الذكي Reem AI، كيف يمكنني مساعدتك اليوم؟', 
+    sender: 'ai', 
+    username: 'reem_ai', 
+    created_at: new Date().toISOString(), 
+    sender_display_name: 'Reem AI' 
+  },
+  { 
+    id: 'f2', 
+    content: 'ما هي مرادفات كلمة "beautiful" في اللغة الإنجليزية؟', 
+    sender: 'user', 
+    username: 'user', 
+    created_at: new Date().toISOString(), 
+    sender_display_name: 'أنت' 
+  },
+  { 
+    id: 'f3', 
+    content: 'تضم اللغة الإنجليزية قائمة واسعة من مرادفات كلمة Beautiful (جميل)، وتختلف هذه المرادفات بناءً على السياق ونوع الشيء الموصوف:\n\nمرادفات عامة للجمال الشديد 🌟\n• Gorgeous: فائق الجمال أو رائع جداً.\n• Stunning: مذهل أو يخطف الأنظار لشدة جماله.\n• Breathtaking: خلّاب أو يسلب الأنفاس (تُستخدم غالباً للمناظر الطبيعية).\n• Wonderful: رائع أو بديع.\n\nوصف الأشخاص والأزياء 👗\n• Pretty: جميلة أو جذابة (تُستخدم عادةً للفتيات والنساء أو الأشياء اللطيفة).\n• Handsome: وسيم (تُستخدم غالباً للرجال، وأحياناً للنساء ذوات الملامح القوية المتناسقة).\n• Attractive: جذاب أو فاتن.\n• Elegant: أنيق أو راقٍ.\n• Cute: لطيف أو جذاب بشكل محبب.\n\nجمال الصنع والدقة الفنية ✨\n• Exquisite: متقن الصنع، دقيق، وبارع الجمال.\n• Magnificent: فخم، عظيم، أو مهيب الجمال.\n• Splendid: فاخر أو باهر.\n\nالجمال الساحر والمضيء ☀️\n• Radiant: متألق، مشرق، أو يشع جمالاً.\n• Charming: ساحر أو فتان.\n• Dazzling: مبهر أو يخطف الأبصار بشدته.\n\nإذا كنت ترغب في توظيف إحدى هذه الكلمات في سياق معين، هل تود معرفة الفروق الدقيقة بينها أو الاطلاع على أمثلة داخل جمل كاملة؟', 
+    sender: 'ai', 
+    username: 'reem_ai', 
+    created_at: new Date().toISOString(), 
+    sender_display_name: 'Reem AI' 
+  },
+  { 
+    id: 'f4', 
+    content: 'ما عكس كلمة (close)', 
+    sender: 'user', 
+    username: 'user', 
+    created_at: new Date().toISOString(), 
+    sender_display_name: 'أنت' 
+  },
+  { 
+    id: 'f5', 
+    content: 'عكس كلمة (close) إذا كان معناها "قريب" هو:\n• Far (بعيد) - الأكثر استخداماً للمسافات.\n• Distant (بعيد/منعزل) - للمسافات والعلاقات الرسمية.\n• Remote (نائٍ/بعيد جداً) - للأماكن المعزولة.\n\nهل تبحث عن عكسها في جملة معينة لتحديد الكلمة الأكثر دقة؟', 
+    sender: 'ai', 
+    username: 'reem_ai', 
+    created_at: new Date().toISOString(), 
+    sender_display_name: 'Reem AI' 
+  },
+  { 
+    id: 'f6', 
+    content: 'ما مرادفات كلمة (professional)', 
+    sender: 'user', 
+    username: 'user', 
+    created_at: new Date().toISOString(), 
+    sender_display_name: 'أنت' 
+  },
+  { 
+    id: 'f7', 
+    content: 'مرادفات كلمة (professional) تعتمد على السياق الذي تُستخدم فيه:\n\n1. سياق العمل والخبرة (محترف / خبير)\n• Expert: خبير ومتمكن جداً في مجاله.\n• Experienced: ذو خبرة وتجربة طويلة.\n• Skilled: ماهر ويمتلك مهارات عالية.\n• Proficient: بارع ومتقن لعمله.\n\n2. سياق السلوك والأداء (مهني / رصين)\n• Businesslike: جاد ومنظم ويتبع أسلوب العمل.\n• Competent: كفء وقادر على إنجاز المهام بنجاح.\n• Ethical: أخلاقي وملتزم بمعايير المهنة.\n\n3. سياق نوع العمل (وظيفة مدفوعة / غير هاوٍ)\n• Paid: يتقاضى أجراً مقابل عمله (عكس هاوٍ).\n• Career: متخصص يتخذ هذا العمل كمهنة دائمة.\n\nهل تريد استخدامها لوصف شخص، سلوك في العمل، أم تصميم ومظهر لكي أقترح لك الكلمة الأنسب؟', 
+    sender: 'ai', 
+    username: 'reem_ai', 
+    created_at: new Date().toISOString(), 
+    sender_display_name: 'Reem AI' 
+  }
 ];
 
 interface ChatWindowProps { 
@@ -41,7 +89,6 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
   const [error, setError] = useState(''); 
   const [sending, setSending] = useState(false); 
   
-  // 🤖 حالة التبديل لوضع الذكاء الاصطناعي الشكلي
   const [isAiMode, setIsAiMode] = useState(false);
 
   const endRef = useRef<HTMLDivElement>(null);
@@ -99,7 +146,6 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
     const content = input.trim(); 
     if (!content || sending) return; 
 
-    // إذا كنا في وضع الذكاء الاصطناعي، يتم تفريغ الحقل فقط وهمياً دون إرسال لقاعدة البيانات
     if (isAiMode) {
       setInput('');
       return;
@@ -133,7 +179,6 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
     } 
   };
 
-  // اختيار الرسائل المعروضة بناءً على الوضع الحالي
   const displayedMessages = isAiMode ? FAKE_AI_MESSAGES : messages;
 
   return (
@@ -149,7 +194,6 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
           </h2>
         </div>
         <div className="flex items-center gap-1">
-          {/* 🤖 زر التبديل لوضع الذكاء الاصطناعي الشكلي */}
           <button 
             aria-label="محادثة الذكاء الاصطناعي" 
             title="تبديل إلى محادثة Reem AI" 
@@ -261,4 +305,3 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
     </section>
   );
 }
-
