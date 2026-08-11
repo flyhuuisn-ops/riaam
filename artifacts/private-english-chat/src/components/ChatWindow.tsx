@@ -14,7 +14,7 @@ export interface Message {
   sender_display_name?: string; 
 }
 
-// قائمة الرسائل التمويهية تماماً كما طلبْتَها بالعربي
+// قائمة الرسائل التمويهية باللغة العربية بالكامل
 const FAKE_AI_MESSAGES: Message[] = [
   { 
     id: 'f1', 
@@ -182,7 +182,7 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
   const displayedMessages = isAiMode ? FAKE_AI_MESSAGES : messages;
 
   return (
-    <section className={`fixed z-50 flex flex-col overflow-hidden border border-[#d8cfc2] bg-[#faf7f1] shadow-[0_30px_100px_rgba(59,52,71,.25)] ${full ? 'inset-0' : 'bottom-0 left-0 right-0 h-[min(720px,92dvh)] rounded-t-[1.8rem] sm:bottom-6 sm:left-1/2 sm:right-auto sm:top-1/2 sm:h-[680px] sm:w-[480px] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-[1.8rem]'}`} dir="rtl">
+    <section className={`fixed z-50 flex flex-col overflow-hidden border border-[#d8cfc2] bg-[#faf7f1] shadow-[0_30px_100px_rgba(59,52,71,.25)] ${full ? 'inset-0 rounded-none' : 'bottom-0 left-0 right-0 h-[min(720px,92dvh)] rounded-t-[1.8rem] sm:bottom-6 sm:left-1/2 sm:right-auto sm:top-1/2 sm:h-[680px] sm:w-[480px] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-[1.8rem]'}`} dir="rtl">
       <header className="flex items-center justify-between border-b border-[#e5dcd0] bg-[#f4eee5] px-5 py-4">
         <div>
           <p className="mb-1 font-mono text-[9px] uppercase tracking-[.18em] text-[#b82d49]">
@@ -194,6 +194,7 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
           </h2>
         </div>
         <div className="flex items-center gap-1">
+          {/* زر تبديل وضع الذكاء الاصطناعي الشكلي */}
           <button 
             aria-label="محادثة الذكاء الاصطناعي" 
             title="تبديل إلى محادثة Reem AI" 
@@ -205,7 +206,16 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
 
           <button aria-label="تمويه" title="تمويه F3" onClick={onDisguise} className="grid h-9 w-9 place-items-center rounded-lg text-[#56727a] hover:bg-[#e5e7df]"><BookOpen size={17} /></button>
           <button aria-label="طوارئ" title="طوارئ Escape" onClick={onPanic} className="grid h-9 w-9 place-items-center rounded-lg text-[#a06a30] hover:bg-[#f8ead7]"><ShieldAlert size={17} /></button>
-          <button aria-label={full ? 'تصغير' : 'ملء الشاشة'} onClick={() => setFull(!full)} className="hidden h-9 w-9 place-items-center rounded-lg text-[#8e8178] hover:bg-[#e9e2d8] sm:grid">{full ? <Minimize2 size={16} /> : <Maximize2 size={16} strokeWidth={2} />}</button>
+          
+          {/* زر ملء الشاشة وإرجاعها للحجم الطبيعي */}
+          <button 
+            aria-label={full ? 'تصغير' : 'ملء الشاشة'} 
+            title={full ? 'تصغير النافذة' : 'ملء الشاشة'} 
+            onClick={() => setFull(!full)} 
+            className="grid h-9 w-9 place-items-center rounded-lg text-[#8e8178] hover:bg-[#e9e2d8]"
+          >
+            {full ? <Minimize2 size={16} /> : <Maximize2 size={16} strokeWidth={2} />}
+          </button>
           
           <button 
             aria-label="إغلاق" 
@@ -305,3 +315,4 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
     </section>
   );
 }
+
