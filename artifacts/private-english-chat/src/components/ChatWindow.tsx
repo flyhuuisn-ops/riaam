@@ -14,64 +14,12 @@ export interface Message {
   sender_display_name?: string; 
 }
 
-// قائمة الرسائل التمويهية باللغة العربية بالكامل
 const FAKE_AI_MESSAGES: Message[] = [
-  { 
-    id: 'f1', 
-    content: 'أهلاً بك! أنا مساعدك الذكي Reem AI، كيف يمكنني مساعدتك اليوم؟', 
-    sender: 'ai', 
-    username: 'reem_ai', 
-    created_at: new Date().toISOString(), 
-    sender_display_name: 'Reem AI' 
-  },
-  { 
-    id: 'f2', 
-    content: 'ما هي مرادفات كلمة "beautiful" في اللغة الإنجليزية؟', 
-    sender: 'user', 
-    username: 'user', 
-    created_at: new Date().toISOString(), 
-    sender_display_name: 'أنت' 
-  },
-  { 
-    id: 'f3', 
-    content: 'تضم اللغة الإنجليزية قائمة واسعة من مرادفات كلمة Beautiful (جميل)، وتختلف هذه المرادفات بناءً على السياق ونوع الشيء الموصوف:\n\nمرادفات عامة للجمال الشديد 🌟\n• Gorgeous: فائق الجمال أو رائع جداً.\n• Stunning: مذهل أو يخطف الأنظار لشدة جماله.\n• Breathtaking: خلّاب أو يسلب الأنفاس (تُستخدم غالباً للمناظر الطبيعية).\n• Wonderful: رائع أو بديع.\n\nوصف الأشخاص والأزياء 👗\n• Pretty: جميلة أو جذابة (تُستخدم عادةً للفتيات والنساء أو الأشياء اللطيفة).\n• Handsome: وسيم (تُستخدم غالباً للرجال، وأحياناً للنساء ذوات الملامح القوية المتناسقة).\n• Attractive: جذاب أو فاتن.\n• Elegant: أنيق أو راقٍ.\n• Cute: لطيف أو جذاب بشكل محبب.\n\nجمال الصنع والدقة الفنية ✨\n• Exquisite: متقن الصنع، دقيق، وبارع الجمال.\n• Magnificent: فخم، عظيم، أو مهيب الجمال.\n• Splendid: فاخر أو باهر.\n\nالجمال الساحر والمضيء ☀️\n• Radiant: متألق، مشرق، أو يشع جمالاً.\n• Charming: ساحر أو فتان.\n• Dazzling: مبهر أو يخطف الأبصار بشدته.\n\nإذا كنت ترغب في توظيف إحدى هذه الكلمات في سياق معين، هل تود معرفة الفروق الدقيقة بينها أو الاطلاع على أمثلة داخل جمل كاملة؟', 
-    sender: 'ai', 
-    username: 'reem_ai', 
-    created_at: new Date().toISOString(), 
-    sender_display_name: 'Reem AI' 
-  },
-  { 
-    id: 'f4', 
-    content: 'ما عكس كلمة (close)', 
-    sender: 'user', 
-    username: 'user', 
-    created_at: new Date().toISOString(), 
-    sender_display_name: 'أنت' 
-  },
-  { 
-    id: 'f5', 
-    content: 'عكس كلمة (close) إذا كان معناها "قريب" هو:\n• Far (بعيد) - الأكثر استخداماً للمسافات.\n• Distant (بعيد/منعزل) - للمسافات والعلاقات الرسمية.\n• Remote (نائٍ/بعيد جداً) - للأماكن المعزولة.\n\nهل تبحث عن عكسها في جملة معينة لتحديد الكلمة الأكثر دقة؟', 
-    sender: 'ai', 
-    username: 'reem_ai', 
-    created_at: new Date().toISOString(), 
-    sender_display_name: 'Reem AI' 
-  },
-  { 
-    id: 'f6', 
-    content: 'ما مرادفات كلمة (professional)', 
-    sender: 'user', 
-    username: 'user', 
-    created_at: new Date().toISOString(), 
-    sender_display_name: 'أنت' 
-  },
-  { 
-    id: 'f7', 
-    content: 'مرادفات كلمة (professional) تعتمد على السياق الذي تُستخدم فيه:\n\n1. سياق العمل والخبرة (محترف / خبير)\n• Expert: خبير ومتمكن جداً في مجاله.\n• Experienced: ذو خبرة وتجربة طويلة.\n• Skilled: ماهر ويمتلك مهارات عالية.\n• Proficient: بارع ومتقن لعمله.\n\n2. سياق السلوك والأداء (مهني / رصين)\n• Businesslike: جاد ومنظم ويتبع أسلوب العمل.\n• Competent: كفء وقادر على إنجاز المهام بنجاح.\n• Ethical: أخلاقي وملتزم بمعايير المهنة.\n\n3. سياق نوع العمل (وظيفة مدفوعة / غير هاوٍ)\n• Paid: يتقاضى أجراً مقابل عمله (عكس هاوٍ).\n• Career: متخصص يتخذ هذا العمل كمهنة دائمة.\n\nهل تريد استخدامها لوصف شخص، سلوك في العمل، أم تصميم ومظهر لكي أقترح لك الكلمة الأنسب؟', 
-    sender: 'ai', 
-    username: 'reem_ai', 
-    created_at: new Date().toISOString(), 
-    sender_display_name: 'Reem AI' 
-  }
+  { id: 'f1', content: 'أهلاً بك! أنا مساعدك الذكي Reem AI، كيف يمكنني مساعدتك اليوم؟', sender: 'ai', username: 'reem_ai', created_at: new Date().toISOString(), sender_display_name: 'Reem AI' },
+  { id: 'f2', content: 'ما هي مرادفات كلمة "beautiful" في اللغة الإنجليزية؟', sender: 'user', username: 'user', created_at: new Date().toISOString(), sender_display_name: 'أنت' },
+  { id: 'f3', content: 'تضم اللغة الإنجليزية قائمة واسعة من مرادفات كلمة Beautiful (جميل)...\n• Gorgeous: فائق الجمال.\n• Stunning: مذهل.\n• Breathtaking: خلّاب.', sender: 'ai', username: 'reem_ai', created_at: new Date().toISOString(), sender_display_name: 'Reem AI' },
+  { id: 'f4', content: 'ما عكس كلمة (close)', sender: 'user', username: 'user', created_at: new Date().toISOString(), sender_display_name: 'أنت' },
+  { id: 'f5', content: 'عكس كلمة (close) إذا كان معناها "قريب" هو:\n• Far (بعيد).\n• Distant (بعيد/منعزل).\n• Remote (نائٍ).', sender: 'ai', username: 'reem_ai', created_at: new Date().toISOString(), sender_display_name: 'Reem AI' }
 ];
 
 interface ChatWindowProps { 
@@ -88,15 +36,12 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
   const [loading, setLoading] = useState(true); 
   const [error, setError] = useState(''); 
   const [sending, setSending] = useState(false); 
-  
   const [isAiMode, setIsAiMode] = useState(false);
-
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { 
     let active = true; 
 
-    // 1. جلب الرسائل السابقة عند فتح النافذة
     const loadMessages = async () => { 
       setLoading(true); 
       const { data, error: fetchError } = await supabase
@@ -116,32 +61,29 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
 
     loadMessages(); 
 
-    // 2. تفعيل الاشتراك اللحظي الفوري لجدول الرسائل
-    const channel = supabase
-      .channel('messages-realtime-room')
-      .on(
-        'postgres_changes',
-        { 
-          event: 'INSERT', 
-          schema: 'public', 
-          table: 'messages' 
-        },
-        (payload) => {
-          const newMessage = payload.new as Message;
-          setMessages((prevMessages) => {
-            // منع تكرار الرسالة إذا كانت أُضيفت سبقاً محلياً
-            if (prevMessages.some((msg) => msg.id === newMessage.id)) {
-              return prevMessages;
-            }
-            return [...prevMessages, newMessage];
-          });
-        }
-      )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log('تم الاتصال بالمحادثة اللحظية بنجاح');
-        }
-      }); 
+    // الاستماع اللحظي عبر Broadcast و Postgres معاً لضمان السرعة
+    const channel = supabase.channel('live-chat-room', {
+      config: { broadcast: { self: false } }
+    });
+
+    // 1. استقبال الرسائل المباشرة السريعة (Broadcast)
+    channel.on('broadcast', { event: 'new-message' }, ({ payload }) => {
+      setMessages((prev) => {
+        if (prev.some((msg) => msg.id === payload.id)) return prev;
+        return [...prev, payload as Message];
+      });
+    });
+
+    // 2. كاحتياط، الاستماع لقاعدة البيانات
+    channel.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+      const newMessage = payload.new as Message;
+      setMessages((prev) => {
+        if (prev.some((msg) => msg.id === newMessage.id)) return prev;
+        return [...prev, newMessage];
+      });
+    });
+
+    channel.subscribe(); 
 
     return () => { 
       active = false; 
@@ -185,8 +127,16 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
       setInput(content); 
       setError('لم تُرسل الرسالة. حاولي مرة أخرى.'); 
     } else if (data) { 
-      // تحديث الواجهة فوراً للمُرسِل
-      setMessages((prev) => (prev.some((m) => m.id === data.id) ? prev : [...prev, data as Message])); 
+      // تحديث الواجهة فوراً للمرسل
+      setMessages((prev) => (prev.some((m) => m.id === data.id) ? prev : [...prev, data as Message]));
+      
+      // إرسال الإشارة المباشرة للطرف الآخر
+      supabase.channel('live-chat-room').send({
+        type: 'broadcast',
+        event: 'new-message',
+        payload: data,
+      });
+
       sendNotification('message', { username: user.username, messagePreview: content }); 
     } 
   };
@@ -206,48 +156,19 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
           </h2>
         </div>
         <div className="flex items-center gap-1">
-          <button 
-            aria-label="محادثة الذكاء الاصطناعي" 
-            title="تبديل إلى محادثة Reem AI" 
-            onClick={() => setIsAiMode((prev) => !prev)} 
-            className={`grid h-9 w-9 place-items-center rounded-lg transition-colors ${isAiMode ? 'bg-purple-200 text-purple-700' : 'text-purple-600 hover:bg-purple-50'}`}
-          >
-            <Bot size={18} />
-          </button>
-
-          <button aria-label="تمويه" title="تمويه F3" onClick={onDisguise} className="grid h-9 w-9 place-items-center rounded-lg text-[#56727a] hover:bg-[#e5e7df]"><BookOpen size={17} /></button>
-          <button aria-label="طوارئ" title="طوارئ Escape" onClick={onPanic} className="grid h-9 w-9 place-items-center rounded-lg text-[#a06a30] hover:bg-[#f8ead7]"><ShieldAlert size={17} /></button>
-          
-          <button 
-            aria-label={full ? 'تصغير' : 'ملء الشاشة'} 
-            title={full ? 'تصغير النافذة' : 'ملء الشاشة'} 
-            onClick={() => setFull(!full)} 
-            className="grid h-9 w-9 place-items-center rounded-lg text-[#8e8178] hover:bg-[#e9e2d8]"
-          >
+          <button onClick={() => setIsAiMode((prev) => !prev)} className={`grid h-9 w-9 place-items-center rounded-lg transition-colors ${isAiMode ? 'bg-purple-200 text-purple-700' : 'text-purple-600 hover:bg-purple-50'}`}><Bot size={18} /></button>
+          <button onClick={onDisguise} className="grid h-9 w-9 place-items-center rounded-lg text-[#56727a] hover:bg-[#e5e7df]"><BookOpen size={17} /></button>
+          <button onClick={onPanic} className="grid h-9 w-9 place-items-center rounded-lg text-[#a06a30] hover:bg-[#f8ead7]"><ShieldAlert size={17} /></button>
+          <button onClick={() => setFull(!full)} className="grid h-9 w-9 place-items-center rounded-lg text-[#8e8178] hover:bg-[#e9e2d8]">
             {full ? <Minimize2 size={16} /> : <Maximize2 size={16} strokeWidth={2} />}
           </button>
-          
-          <button 
-            aria-label="إغلاق" 
-            onClick={() => {
-              if (document.activeElement instanceof HTMLElement) {
-                document.activeElement.blur();
-              }
-              onClose();
-            }} 
-            className="grid h-9 w-9 place-items-center rounded-lg text-[#8e8178] hover:bg-[#e9e2d8]"
-          >
-            <X size={17} />
-          </button>
+          <button onClick={onClose} className="grid h-9 w-9 place-items-center rounded-lg text-[#8e8178] hover:bg-[#e9e2d8]"><X size={17} /></button>
         </div>
       </header>
 
       <div className="flex-1 overflow-y-auto px-4 py-5">
         {!isAiMode && loading ? (
-          <div className="space-y-4">
-            <div className="h-16 w-3/4 animate-pulse rounded-2xl bg-[#eee7dc]" />
-            <div className="mr-auto h-20 w-2/3 animate-pulse rounded-2xl bg-[#eee7dc]" />
-          </div>
+          <div className="space-y-4"><div className="h-16 w-3/4 animate-pulse rounded-2xl bg-[#eee7dc]" /><div className="mr-auto h-20 w-2/3 animate-pulse rounded-2xl bg-[#eee7dc]" /></div>
         ) : !isAiMode && error && messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center text-center">
             <AlertCircle size={24} className="mb-3 text-[#b82d49]" />
@@ -258,40 +179,19 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
           <div className="flex h-full flex-col items-center justify-center text-center">
             <div className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-[#b82d49]/10 text-[#b82d49]"><MessageCircle size={24} /></div>
             <p className="font-semibold text-[#514752]">لا توجد رسائل حالياً</p>
-            <p className="mt-2 text-xs text-[#a09288]">اكتب رسالة للبدء.</p>
           </div>
         ) : (
           <div className="space-y-3">
             {displayedMessages.map((message) => { 
-              const mine = isAiMode 
-                ? message.sender === 'user' 
-                : (message.sender_handle ? message.sender_handle === user.username : message.sender === user.username); 
-              
-              const displayName = isAiMode
-                ? (message.sender === 'user' ? 'أنت' : 'Reem AI')
-                : (message.sender_display_name || message.sender_handle || message.sender || 'عضو');
+              const mine = isAiMode ? message.sender === 'user' : (message.sender_handle ? message.sender_handle === user.username : message.sender === user.username); 
+              const displayName = isAiMode ? (message.sender === 'user' ? 'أنت' : 'Reem AI') : (message.sender_display_name || message.sender_handle || message.sender || 'عضو');
 
               return (
                 <div key={message.id} className={`flex w-full ${mine ? 'justify-start' : 'justify-end'}`}>
-                  <div className={`relative w-fit max-w-[85%] rounded-2xl px-3 py-2 shadow-sm ${
-                    isAiMode 
-                      ? (mine ? 'rounded-tr-sm bg-purple-100 text-[#3b3447]' : 'rounded-tl-sm bg-[#3b3447] text-[#f9f3e8]')
-                      : (mine ? 'rounded-tr-sm bg-[#b82d49]/10 text-[#3b3447]' : 'rounded-tl-sm bg-[#3b3447] text-[#f9f3e8]')
-                  }`}>
-                    
-                    <p className={`mb-0.5 text-[11px] font-bold ${isAiMode ? (mine ? 'text-purple-700' : 'text-[#dcb386]') : (mine ? 'text-[#b82d49]' : 'text-[#dcb386]')}`}>
-                      {displayName}
-                    </p>
-                    
-                    <p className="text-[14px] leading-snug whitespace-pre-wrap break-words">
-                      {message.content}
-                    </p>
-                    
-                    {!isAiMode && (
-                      <time dir="ltr" className={`mt-1 block text-left font-mono text-[9px] ${mine ? 'text-[#a09288]' : 'text-[#a398a8]'}`}>
-                        {new Date(message.created_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}
-                      </time>
-                    )}
+                  <div className={`relative w-fit max-w-[85%] rounded-2xl px-3 py-2 shadow-sm ${isAiMode ? (mine ? 'rounded-tr-sm bg-purple-100 text-[#3b3447]' : 'rounded-tl-sm bg-[#3b3447] text-[#f9f3e8]') : (mine ? 'rounded-tr-sm bg-[#b82d49]/10 text-[#3b3447]' : 'rounded-tl-sm bg-[#3b3447] text-[#f9f3e8]')}`}>
+                    <p className={`mb-0.5 text-[11px] font-bold ${isAiMode ? (mine ? 'text-purple-700' : 'text-[#dcb386]') : (mine ? 'text-[#b82d49]' : 'text-[#dcb386]')}`}>{displayName}</p>
+                    <p className="text-[14px] leading-snug whitespace-pre-wrap break-words">{message.content}</p>
+                    {!isAiMode && <time dir="ltr" className={`mt-1 block text-left font-mono text-[9px] ${mine ? 'text-[#a09288]' : 'text-[#a398a8]'}`}>{new Date(message.created_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}</time>}
                   </div>
                 </div>
               ); 
@@ -303,23 +203,8 @@ export default function ChatWindow({ user, onClose, onPanic, onDisguise }: ChatW
 
       <footer className="border-t border-[#e5dcd0] bg-[#f4eee5] p-4">
         <div className="flex items-end gap-2">
-          <textarea 
-            aria-label="نص الرسالة" 
-            value={input} 
-            onChange={(e) => setInput(e.target.value)} 
-            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} 
-            rows={1} 
-            placeholder={isAiMode ? "اسأل Reem AI..." : "اكتب رسالتك..."} 
-            className="max-h-28 min-h-11 flex-1 resize-none rounded-xl border border-[#d7cec0] bg-[#fffdf9] px-4 py-3 text-sm text-[#3b3447] outline-none focus:border-[#b82d49]" 
-          />
-          <button 
-            aria-label="إرسال" 
-            disabled={!input.trim() || sending} 
-            onClick={send} 
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#b82d49] text-[#fffaf2] transition hover:bg-[#a92440] disabled:opacity-40"
-          >
-            {sending ? <LoaderCircle size={17} className="animate-spin" /> : <Send size={17} />}
-          </button>
+          <textarea value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} rows={1} placeholder={isAiMode ? "اسأل Reem AI..." : "اكتب رسالتك..."} className="max-h-28 min-h-11 flex-1 resize-none rounded-xl border border-[#d7cec0] bg-[#fffdf9] px-4 py-3 text-sm text-[#3b3447] outline-none focus:border-[#b82d49]" />
+          <button disabled={!input.trim() || sending} onClick={send} className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#b82d49] text-[#fffaf2] transition hover:bg-[#a92440] disabled:opacity-40">{sending ? <LoaderCircle size={17} className="animate-spin" /> : <Send size={17} />}</button>
         </div>
       </footer>
     </section>
